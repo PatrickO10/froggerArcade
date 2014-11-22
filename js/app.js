@@ -35,13 +35,16 @@ Guardian.prototype.update = function(dt) {
     if (this.x > -50 && keyCount === 1) {
         this.x -= 200 * dt;
     } else {
-        this.x = 500;
-        this.y = this.yPos();
+        guardian.reset();
         this.sprite = guards[Math.floor(Math.random() * 4)];
     }
 }
 Guardian.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+Guardian.prototype.reset = function() {
+    this.x = 500;
+    this.y = this.yPos();
 }
 var YtopBot = [-1, 1];
 var HopperBug = function() {
@@ -140,12 +143,24 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     //console.log(this.x);
-    if (this.x <= wall) {
+    if (this.x <= 500) {
         this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
         //console.log(this.speed[Math.floor(Math.random() * 6)]);
     } else {
-        this.x = -100;
+        this.x = this.xPos();
         this.y = this.yPos();
+        }
+        // Checks collision for player and enemy
+    if (player.x <= (this.x + 50) && this.x <= (player.x + 50)
+      && player.y <= (this.y + 50) && this.y <= (player.y + 50)) {
+        player.reset();
+    }
+
+    if (guardian.x <= (this.x + 50) && this.x <= (guardian.x + 50)
+      && guardian.y <= (this.y + 50) && this.y <= (guardian.y + 50)) {
+        this.x = this.xPos();
+        this.y = this.yPos();
+    }
         /*
         wall = -200;
         this.x -= this.speed * dt;
@@ -154,7 +169,7 @@ Enemy.prototype.update = function(dt) {
             enemyReturn = true;
             this.y = this.yPos();
             */
-        }
+        
     
     //this.x += this.speed * dt * gems;
 }
@@ -162,6 +177,11 @@ Enemy.prototype.update = function(dt) {
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+
+Enemy.prototype.reset = function() {
+    this.x = this.xPos();
+    this.y = this.yPos();
 }
 
 // Now write your own player class
@@ -174,7 +194,9 @@ var Player = function () {
 }
 
 Player.prototype.update = function(dt) {
-
+    if (this.y === -40) {
+        player.reset();
+    }
 }
 
 Player.prototype.render = function() {
@@ -182,11 +204,8 @@ Player.prototype.render = function() {
 }
 
 Player.prototype.reset = function() {
-    if (this.y === -40){
-        //alert('yes');
-        this.x = 300;
-        this.y = 300;
-    }
+    this.x = 300;
+    this.y = 300;
 }
 Player.prototype.handleInput = function (key) {
     // if statements to check which key was pressed and to make sure
