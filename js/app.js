@@ -18,10 +18,30 @@ var GameOver = function() {
 GameOver.prototype.update = function() {
 
 }
+var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
+        'images/char-princess-girl.png', 'images/char-cat-girl.png'];
+// Guardians help the player by eliminating bugs
 var Guardian = function() {
+    
     this.x = 500;
     this.y = this.yPos();
-    this.sprite = 'images/enemy-bug.png';
+    this.sprite = guards[Math.floor(Math.random() * 4)];
+}
+Guardian.prototype.yPos = function() {
+    var guardYpos = posY[Math.floor(Math.random() * 3)];
+    return guardYpos;
+}
+Guardian.prototype.update = function(dt) {
+    if (this.x > -50 && keyCount === 1) {
+        this.x -= 200 * dt;
+    } else {
+        this.x = 500;
+        this.y = this.yPos();
+        this.sprite = guards[Math.floor(Math.random() * 4)];
+    }
+}
+Guardian.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 var YtopBot = [-1, 1];
 var HopperBug = function() {
@@ -201,8 +221,26 @@ Player.prototype.handleInput = function (key) {
     }
 }
 
+var keyCount = 0;
+var Key = function() {
+   // this.x = posX[Math.floor(Math.random() * 5)];
+   // this.y = posY[Math.floor(Math.random() * 3)];
+    this.sprite = 'images/key.png';
+}
+Key.prototype.update = function() {
+    if (player.x === this.x && player.y === this.y) {
+        this.x = -100;
+        this.y = -100;
+        keyCount++;
+        //alert(lifeCount);
+    }
+}
+Key.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
 
 var gemStar = 0;
+var grabKey = 0
 var Gem = function() {
     this.x = posX[Math.floor(Math.random() * 5)];
     this.y = posY[Math.floor(Math.random() * 3)];
@@ -223,6 +261,11 @@ Gem.prototype.update = function() {
         star.x = posX[Math.floor(Math.random() * 5)];
         star.y = posY[Math.floor(Math.random() * 3)];
         gemStar = 1;
+    }
+    if (grabKey === 0 && gemCount === 10) {
+        key.x = posX[Math.floor(Math.random() * 5)];
+        key.y = posY[Math.floor(Math.random() * 3)];
+        grabKey++;
     }
 }
 Gem.prototype.render = function() {
@@ -258,8 +301,10 @@ var enemy4 = new Enemy();
 var enemy5 = new HopperBug();
 var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5];
 var player = new Player();
+var guardian = new Guardian();
 var gem = new Gem();
 var star = new Star();
+var key = new Key();
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
