@@ -127,13 +127,13 @@ var Enemy = function() {
 }
 
 Enemy.prototype.yPos = function() {
-    var enemyYpos = posY[Math.floor(Math.random() * 3)];
-    return enemyYpos;
+    var positionY = posY[Math.floor(Math.random() * 3)];
+    return positionY;
 }
 
 Enemy.prototype.xPos = function() {
-    var enemyXpos = randomX[Math.floor(Math.random() * 3)];
-    return enemyXpos;
+    var positionX = randomX[Math.floor(Math.random() * 3)];
+    return positionX;
 }
 
 // Update the enemy's position, required method for game
@@ -147,19 +147,21 @@ Enemy.prototype.update = function(dt) {
         this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
         //console.log(this.speed[Math.floor(Math.random() * 6)]);
     } else {
-        this.x = this.xPos();
-        this.y = this.yPos();
+        // this.x = this.xPos();
+        // this.y = this.yPos();
+        this.reset();
         }
-        // Checks collision for player and enemy
+        // Checks collision for player and enemy bug
     if (player.x <= (this.x + 50) && this.x <= (player.x + 50)
       && player.y <= (this.y + 50) && this.y <= (player.y + 50)) {
         player.reset();
     }
-
+    // Checks collision for guardian and enemy bug
     if (guardian.x <= (this.x + 50) && this.x <= (guardian.x + 50)
       && guardian.y <= (this.y + 50) && this.y <= (guardian.y + 50)) {
-        this.x = this.xPos();
-        this.y = this.yPos();
+        // this.x = this.xPos();
+        // this.y = this.yPos();
+        this.reset();
     }
         /*
         wall = -200;
@@ -182,6 +184,7 @@ Enemy.prototype.render = function() {
 Enemy.prototype.reset = function() {
     this.x = this.xPos();
     this.y = this.yPos();
+    return this.x, this.y;
 }
 
 // Now write your own player class
