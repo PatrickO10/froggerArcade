@@ -62,7 +62,7 @@ HopperBug.prototype.yPos = function() {
 }
 
 HopperBug.prototype.update = function(dt) {
-    if (gemCount % 5 === 0 || checkStatus === 1) {
+    if (gemCount >= 5 || checkStatus === 1) {
         checkStatus = 1;
     this.x += this.speed[Math.round(Math.random() * 4)] * dt;
     this.y += 50 * dt;
@@ -114,18 +114,18 @@ HopperBug.prototype.render = function() {
 }
 //var enemyYpos = [100, 300, 600];
 // Enemies our player must avoid
-var Enemy = function() {
+var Enemy = function(sprite) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-    this.x = this.xPos();
-    this.y = this.yPos();
+    //this.x = this.xPos();
+    //this.y = this.yPos();
     this.speed = [45, 90, 135, 180, 315, 360, 720];
-    this.sprite = 'images/enemy-bug.png';
+    this.sprite = sprite;
 }
-
+/*
 Enemy.prototype.yPos = function() {
     var positionY = posY[Math.floor(Math.random() * 3)];
     return positionY;
@@ -135,6 +135,14 @@ Enemy.prototype.xPos = function() {
     var positionX = randomX[Math.floor(Math.random() * 3)];
     return positionX;
 }
+
+Enemy.prototype.resetPos = function() {
+    var positionX = randomX[Math.floor(Math.random() * 3)];
+    var positionY = posY[Math.floor(Math.random() * 3)];
+    this.x = this.positionX;
+    this.y = this.positionY;
+    return this.x, this.y;
+} */
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
@@ -182,8 +190,9 @@ Enemy.prototype.render = function() {
 }
 
 Enemy.prototype.reset = function() {
-    this.x = this.xPos();
-    this.y = this.yPos();
+    //this.x = this.xPos();
+    this.x = randomX[Math.floor(Math.random() * 3)];
+    this.y = posY[Math.floor(Math.random() * 3)];
     return this.x, this.y;
 }
 
@@ -261,8 +270,9 @@ Key.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 
-var gemStar = 0;
-var grabKey = 0
+var starSpawn = 0;
+var grabKey = 0;
+var turnBackSpawn = 0;
 var Gem = function() {
     this.x = posX[Math.floor(Math.random() * 5)];
     this.y = posY[Math.floor(Math.random() * 3)];
@@ -274,20 +284,26 @@ Gem.prototype.update = function() {
         gemCount++;
         console.log(gemCount);
         console.log(gemCount % 3);
-        gemStar = gemCount % 3;
+        starSpawn = gemCount % 3;
+        turnBackSpawn = gemCount % 4;
         this.x = posX[Math.floor(Math.random() * 5)];
         this.y = posY[Math.floor(Math.random() * 3)];
         //alert(this.x);
     }
-    if (gemStar === 0 && gemCount != 0) {
+    if (starSpawn === 0 && gemCount != 0) {
         star.x = posX[Math.floor(Math.random() * 5)];
         star.y = posY[Math.floor(Math.random() * 3)];
-        gemStar = 1;
+        starSpawn = 1;
     }
     if (grabKey === 0 && gemCount === 10) {
         key.x = posX[Math.floor(Math.random() * 5)];
         key.y = posY[Math.floor(Math.random() * 3)];
         grabKey++;
+    }
+    if (turnBackSpawn === 0 && gemCount != 0) {
+        enemy7.x = randomX[Math.floor(Math.random() * 5)];
+        enemy7.y = posY[Math.floor(Math.random() * 3)];
+        turnBackStatus = 1;
     }
 }
 Gem.prototype.render = function() {
@@ -312,16 +328,84 @@ Star.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 
+var TurnBack = function(sprite) {
+    Enemy.call(this, sprite)
+}
+var turnBackStatus = 0;
+TurnBack.prototype = Object.create(Enemy.prototype);
+TurnBack.prototype.update = function(dt) {
+    
+    /*
+    if (this.x < 500 && this.x > 400) {
+        turnStatus = true;
+    }
+    if (this.x < 0 && this.x > -50) {
+        turnStatus = 0;
+    }
+    if (turnStatus) {
+        console.log('yes');
+        this.x -= 200 * dt;
+    } 
+    if (this.x < 500) {
+        this.x += 200 * dt;
+        
+    } *//*
+    if ((this.x > 0 && this.x < 5) && (this.x > 100 && this.x < 105)) {
+        turnStatus++;
+        console.log(turnStatus);
+    } */
+        if (this.x <= 500 && turnBackStatus === 1) {
+            this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
+        } else {
+        // this.x = this.xPos();
+        // this.y = this.yPos();
+        turnBackStatus = 0;
+        this.x -= 200 * dt;
+        
+    }
+    if (this.x < -100) {
+            this.x = -100;
+    }
+
+}
+
+
+var Heart = function(sprite) {
+    Enemy.call(this, sprite);
+}
+
+Heart.prototype = Object.create(Enemy.prototype);
+
+Heart.prototype.reset = function() {
+    //this.x = this.xPos();
+    this.x = 200;
+    this.y = posY[Math.floor(Math.random() * 3)];
+    return this.x, this.y;
+}
+
+Heart.prototype.update = function(dt) {
+    if (this.x <= 500) {
+        this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
+        //console.log(this.speed[Math.floor(Math.random() * 6)]);
+    } else {
+        // this.x = this.xPos();
+        // this.y = this.yPos();
+        this.reset();
+        }
+}
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var enemy0 = new Enemy();
-var enemy1 = new Enemy();
-var enemy2 = new Enemy();
-var enemy3 = new Enemy();
-var enemy4 = new Enemy();
+var enemy0 = new Enemy('images/enemy-bug.png');
+var enemy1 = new Enemy('images/enemy-bug.png');
+var enemy2 = new Enemy('images/enemy-bug.png');
+var enemy3 = new Enemy('images/enemy-bug.png');
+var enemy4 = new Enemy('images/enemy-bug.png');
+var enemy6 = new Heart('images/Heart.png');
+var enemy7 = new TurnBack('images/Gem Blue.png');
 var enemy5 = new HopperBug();
-var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5];
+var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7];
 var player = new Player();
 var guardian = new Guardian();
 var gem = new Gem();
