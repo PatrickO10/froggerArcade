@@ -6,6 +6,11 @@ var enemyReturn = true;
 var posY = [45, 130, 215];
 var posX = [0, 100, 200, 300, 400];
 var randomX = [-100, -200, -300, -400, -500];
+var enemySprite = ['images/enemy-bug.png', 'images/enemy-bug-orange.png', 'images/enemy-bug-sick.png',
+        'images/enemy-bug-shadow.png', 'images/enemy-bug-grey.png', 'images/enemy-bug-blue.png'];
+var randomSprite = function () {
+    return enemySprite[Math.floor(Math.random() * 6)];
+}
 var GameOver = function() {
     if (lifeCount <= 0) {
         ctx.clearRect(0, 0, 505, 606);
@@ -51,7 +56,7 @@ var HopperBug = function() {
     this.x = -100;
     this.y = 130;
     this.speed = [45,135,225,315,360, 720];
-    this.sprite = 'images/enemy-bug.png';
+    this.sprite = randomSprite();
 }
 var checkStatus = 0;
 var i = 0;
@@ -397,11 +402,11 @@ Heart.prototype.update = function(dt) {
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var enemy0 = new Enemy('images/enemy-bug.png');
-var enemy1 = new Enemy('images/enemy-bug.png');
-var enemy2 = new Enemy('images/enemy-bug.png');
-var enemy3 = new Enemy('images/enemy-bug.png');
-var enemy4 = new Enemy('images/enemy-bug.png');
+var enemy0 = new Enemy(randomSprite());
+var enemy1 = new Enemy(randomSprite());
+var enemy2 = new Enemy(randomSprite());
+var enemy3 = new Enemy(randomSprite());
+var enemy4 = new Enemy(randomSprite());
 var enemy6 = new Heart('images/Heart.png');
 var enemy7 = new TurnBack('images/Gem Blue.png');
 var enemy5 = new HopperBug();
