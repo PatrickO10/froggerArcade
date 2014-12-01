@@ -27,12 +27,17 @@ var GameOver = function() {
         ctx.fillText("OVER", 60, 300);
     }
 };
-
+ 
 var Character = function(sprite) {
     this.sprite = sprite;
-    this.speed = this.speed[Math.floor(Math.random() * 6)];
+    this.speed = speed[Math.floor(Math.random() * 6)];
 };
 
+Character.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+/*
 Character.prototype.collision = function() {
     // Enemy and guardian collision
     if (guardian.x <= (this.x + 50) && this.x <= (guardian.x + 50)
@@ -53,27 +58,23 @@ Character.prototype.collision = function() {
     }
 };
 
-Character.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
-
 Character.prototype.reset = function() {
     //this.x = this.xPos();
     if (this.x === enemy.x) { // Enemy reset
         this.x = randomX[Math.floor(Math.random() * 3)];
         this.y = posY[Math.floor(Math.random() * 3)];
         //return this.x, this.y;
-    } if else (this.x === player.x) { // Player reset
+    } else if (this.x === player.x) { // Player reset
         lifeCount--;
         this.x = posX[Math.floor(Math.random() * 5)];
         this.y = posY[(Math.floor(Math.random() * 2)) + 3];
-    } if else (this.x === enemy5.x) { // DiagonalBug reset
+    } else if (this.x === enemy5.x) { // DiagonalBug reset
         this.x = -100;
         this.y = 45;
-    } if else (this.x === guardian.x) { // Guardian reset
+    } else if (this.x === guardian.x) { // Guardian reset
         this.x = 500;
         this.y = this.posY[Math.floor(Math.random() * 3)];
-    } if else (this.x === heart.x) { // Heart reset
+    } else if (this.x === heart.x) { // Heart reset
         this.x = -100;
         this.y = posY[Math.floor(Math.random() * 5)];
     }
@@ -131,8 +132,9 @@ Character.prototype.update = function (dt) {
     };
 
 }
+*/
 // Collisions
-/*
+
 function guardian_collision (x, y) {
     if (guardian.x <= (x + 50) && x <= (guardian.x + 50)
       && guardian.y === y) {
@@ -154,22 +156,30 @@ function diagon_collision (x, y) {
             enemy5.y = 45;
     }
 };
-*/
 
 var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
         'images/char-princess-girl.png', 'images/char-cat-girl.png'];
 // Guardians our enemies must avoid!
-
+/*
 var Guardian = function() {
     this.x = 500;
     this.y = this.yPos();
     this.sprite = guards[Math.floor(Math.random() * 4)];
 };
+*/
+var Guardian = function() {
+    Character.call(this, sprite);
+    this.reset();
+};
 
+Guardian.prototype = Object.create(Character.prototype);
+Guardian.prototype.constructor = Guardian;
+/*
 Guardian.prototype.yPos = function() {
     var guardYpos = posY[Math.floor(Math.random() * 3)];
     return guardYpos;
 };
+*/
 
 Guardian.prototype.update = function(dt) {
     if (this.x > -50 && keyCount === 1) {
@@ -179,14 +189,14 @@ Guardian.prototype.update = function(dt) {
         this.sprite = guards[Math.floor(Math.random() * 4)];
     }
 };
-
+/*
 Guardian.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
-
+*/
 Guardian.prototype.reset = function() {
     this.x = 500;
-    this.y = this.yPos();
+    this.y = posY[Math.floor(Math.random() * 3)];
 };
 
 var checkStatus = 0;
@@ -213,7 +223,7 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     if (this.x <= 500) {
-        this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
+        this.x += speed[Math.floor(Math.random() * 7)] * dt;
     } else {
         this.reset();
     }
@@ -238,7 +248,7 @@ Enemy.prototype.reset = function() {
 };
 
 var DiagonalBug = function(sprite) {
-    this.speed = [45, 90, 135, 180, 315, 360, 720];
+    //this.speed = [45, 90, 135, 180, 315, 360, 720];
     this.x = -100;
     this.y = 45;
     this.sprite = sprite;
@@ -257,7 +267,7 @@ DiagonalBug.prototype.yPos = function() {
 DiagonalBug.prototype.update = function(dt) {
     if (gemCount >= 5 || checkStatus === 1) {
         checkStatus = 1;
-        this.x += this.speed[Math.round(Math.random() * 4)] * dt;
+        this.x += speed[Math.round(Math.random() * 7)] * dt;
         this.y += 50 * dt;
         if (this.x > 399 && gemCount > 5) {
             this.x = -100;
@@ -391,7 +401,7 @@ TurnBack.prototype = Object.create(Enemy.prototype);
 
 TurnBack.prototype.update = function(dt) {
         if (this.x <= 500 && turnBackStatus === 1) {
-            this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
+            this.x += speed[Math.floor(Math.random() * 7)] * dt;
         } else {
         turnBackStatus = 0;
         this.x -= 200 * dt;
@@ -418,7 +428,7 @@ Heart.prototype.reset = function() {
 
 Heart.prototype.update = function(dt) {
     if (this.x <= 500) {
-        this.x += this.speed[Math.floor(Math.random() * 6)] * dt;
+        this.x += speed[Math.floor(Math.random() * 7)] * dt;
         //console.log(this.speed[Math.floor(Math.random() * 6)]);
     } else {
         this.reset();
