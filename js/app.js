@@ -25,6 +25,10 @@ var randomGuard = function () {
     return guards[Math.floor(Math.random() * 4)];
 };
 
+var randomSpeed = function () {
+    return speed[Math.floor(Math.random() * 7)];
+};
+
 var GameOver = function() {
     if (lifeCount <= 0) {
         ctx.clearRect(0, 0, 505, 606);
@@ -37,11 +41,54 @@ var GameOver = function() {
  
 var Character = function(sprite) {
     this.sprite = sprite;
-    this.speed = speed[Math.floor(Math.random() * 6)];
+    //this.speed = randomSpeed();
 };
 
 Character.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+// Enemies our player must avoid
+
+var Enemy = function(sprite) {
+    Character.call(this, sprite);
+    this.speed = randomSpeed();
+};
+
+Enemy.prototype = Object.create(Character.prototype);
+Enemy.prototype.constructor = Enemy;
+
+// Update the enemy's position, required method for game
+// Parameter: dt, a time delta between ticks
+Enemy.prototype.update = function(dt) {
+    // You should multiply any movement by the dt parameter
+    // which will ensure the game runs at the same speed for
+    // all computers.
+    if (this.x <= 500) {
+        // this.x += speed[Math.floor(Math.random() * 7)] * dt;
+        this.x += this.speed * dt;
+    } else {
+        this.reset();
+    }
+    // Checks collision for player and enemy bug
+    if(player_collision(this.x, this.y)) {
+        player.reset();
+    }
+    // Checks collision for guardian and enemy bug
+    if(guardian_collision(this.x, this.y)) {
+        this.reset();
+    }
+};
+
+Enemy.prototype.reset = function() {
+    this.x = randomX[Math.floor(Math.random() * 3)];
+    this.y = posY[Math.floor(Math.random() * 3)];
+    this.speed = randomSpeed();
+    this.sprite = this.resetSprite();
+};
+
+Enemy.prototype.resetSprite = function() {
+    return randomSprite();
 };
 
 // Collisions
@@ -56,7 +103,8 @@ function guardian_collision (x, y) {
 function player_collision (x, y) {
     if (player.x <= (x + 50) && x <= (player.x + 50) &&
         player.y <= (y + 50) && y <= (player.y + 50)) {
-            player.reset();
+        //player.reset();
+        return true;
     }
 };
 
@@ -84,7 +132,7 @@ Guardian.prototype.update = function(dt) {
     if (this.x > -50 && keyCount === 1) {
         this.x -= 200 * dt;
     } else {
-        guardian.reset();
+        this.reset();
     }
 };
 
@@ -97,42 +145,6 @@ Guardian.prototype.reset = function() {
 var checkStatus = 0;
 var i = 0;
 speed = [45, 90, 135, 180, 315, 360, 720];
-
-// Enemies our player must avoid
-
-var Enemy = function(sprite) {
-    Character.call(this, sprite, speed);
-};
-
-Enemy.prototype = Object.create(Character.prototype);
-Enemy.prototype.constructor = Enemy;
-
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
-    if (this.x <= 500) {
-        // this.x += speed[Math.floor(Math.random() * 7)] * dt;
-        this.x += this.speed * dt;
-    } else {
-        this.reset();
-    }
-    // Checks collision for player and enemy bug
-    player_collision(this.x, this.y);
-    // Checks collision for guardian and enemy bug
-    if(guardian_collision(this.x, this.y)) {
-        this.reset();
-    }
-};
-
-Enemy.prototype.reset = function() {
-    this.x = randomX[Math.floor(Math.random() * 3)];
-    this.y = posY[Math.floor(Math.random() * 3)];
-    this.speed = speed[Math.floor(Math.random() * 7)];
-    this.sprite = randomSprite();
-};
 
 var DiagonalBug = function(sprite) {
     Character.call(this, sprite);
@@ -156,13 +168,36 @@ DiagonalBug.prototype.update = function(dt) {
             checkStatus = 0;
         }
     };
-    player_collision(this.x, this.y);
+    if (player_collision(this.x, this.y)) {
+        player.reset();
+    }
     diagon_collision(this.x, this.y); 
 };
 
 DiagonalBug.prototype.reset = function() {
     this.x = -100;
     this.y = 45;
+};
+
+var TurnBack = function(sprite) {
+    Enemy.call(this, sprite)
+}
+
+TurnBack.prototype = Object.create(Enemy.prototype);
+TurnBack.prototype.constructor = TurnBack;
+
+TurnBack.prototype.update = function(dt) {
+        if (this.x <= 500 && turnBackStatus === 1) {
+            this.x += speed[Math.floor(Math.random() * 7)] * dt;
+        } else {
+        turnBackStatus = 0;
+        this.x -= 200 * dt;
+        
+    }
+    if (this.x < -100) {
+            this.x = -100;
+    }
+
 };
 
 // Now write your own player class
@@ -207,34 +242,19 @@ Player.prototype.handleInput = function (key) {
     }
 };
 
-var Key = function() {
-    this.sprite = 'images/key.png';
-};
-
-Key.prototype.update = function() {
-    if (player.x === this.x && player.y === this.y) {
-        this.x = -100;
-        this.y = -100;
-        keyCount++;
-    }
-};
-
-Key.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
-
 var Gem = function() {
     this.x = posX[Math.floor(Math.random() * 5)];
     this.y = posY[Math.floor(Math.random() * 3)];
     this.sprite = 'images/Gem Orange.png';
 };
 
+Gem.prototype = Object.create(Character.prototype);
+Gem.prototype.constructor = Gem;
+
 Gem.prototype.update = function() {
     if (player.y === this.y && player.x === this.x) {
         gemCount++;
-        console.log(gemCount);
-        console.log(gemCount % 3);
-        starSpawn = gemCount % 3;
+        starSpawn = gemCount % 9;
         turnBackSpawn = gemCount % 4;
         this.x = posX[Math.floor(Math.random() * 5)];
         this.y = posY[Math.floor(Math.random() * 3)];
@@ -256,64 +276,67 @@ Gem.prototype.update = function() {
     }
 };
 
-Gem.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
+var Key = function() {
+    this.sprite = 'images/key.png';
 };
+
+Key.prototype = Object.create(Gem.prototype); // Taketh all that you know from thy gem
+Key.prototype.update = function() {
+    this.acquire();
+};
+
+Key.prototype.acquire = function() {
+    if (player.x === this.x && player.y === this.y) {
+        this.x = -100;
+        this.y = -100;
+    }
+}
 
 var Star = function() {
     this.sprite = 'images/Star.png';
 };
 
 Star.prototype.update = function () {
+    this.acquire();
+};
+
+Star.prototype.acquire = function () {
     if (player.x === this.x && player.y === this.y) {
-        this.x = -100;
-        this.y = -100;
+        this.reset();
         lifeCount++;
     }
+};
+Star.prototype.reset = function() {
+    this.x = -100;
+    this.y = -100;
 };
 
 Star.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-var TurnBack = function(sprite) {
-    Enemy.call(this, sprite)
-}
-
-TurnBack.prototype = Object.create(Enemy.prototype);
-
-TurnBack.prototype.update = function(dt) {
-        if (this.x <= 500 && turnBackStatus === 1) {
-            this.x += speed[Math.floor(Math.random() * 7)] * dt;
-        } else {
-        turnBackStatus = 0;
-        this.x -= 200 * dt;
-        
-    }
-    if (this.x < -100) {
-            this.x = -100;
-    }
-
+var Heart = function(sprite) {
+    Character.call(this, sprite, speed);
 };
 
-var Heart = function(sprite) {
-    Enemy.call(this, sprite);
-}
-
 Heart.prototype = Object.create(Enemy.prototype);
+//Heart.prototype = Object.create(Star.prototype.starupdate);
+Heart.prototype.constructor = Heart;
+Heart.prototype.acquire = Star.prototype.acquire;
 
-Heart.prototype.reset = function() {
-    //this.x = this.xPos();
-    this.x = 200;
-    this.y = posY[Math.floor(Math.random() * 3)];
-    return this.x, this.y;
+Heart.prototype.resetSprite = function() {
+    return 'images/Heart.png';
 };
 
 Heart.prototype.update = function(dt) {
     if (this.x <= 500) {
-        this.x += speed[Math.floor(Math.random() * 7)] * dt;
-        //console.log(this.speed[Math.floor(Math.random() * 6)]);
+        this.x += this.speed * dt;
+        //console.log(this.randomSpeed());
     } else {
+        this.reset();
+    }
+    if (player_collision(this.x, this.y)) {
         this.reset();
     }
 };
