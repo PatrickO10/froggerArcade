@@ -15,18 +15,19 @@ var randomX = [-100, -200, -300, -400, -500];
 var enemySprites = ['images/enemy-bug.png', 'images/enemy-bug-orange.png', 'images/enemy-bug-sick.png',
         'images/enemy-bug-shadow.png', 'images/enemy-bug-grey.png', 'images/enemy-bug-blue.png'];
 
-// Returns a random sprite.
+// Returns a random sprite
 var randomSprite = function () {
-    return enemySprites[Math.floor(Math.random() * 6)];
+    return enemySprites[Math.floor(Math.random() * enemySprites.length)];
 };
 
-// Returns a random guard.
+// Returns a random guard
 var randomGuard = function () {
-    return guards[Math.floor(Math.random() * 4)];
+    return guards[Math.floor(Math.random() * guards.length)];
 };
 
+// Returns a random speed
 var randomSpeed = function () {
-    return speed[Math.floor(Math.random() * 7)];
+    return speed[Math.floor(Math.random() * speed.length)];
 };
 
 var GameOver = function() {
@@ -213,8 +214,8 @@ Player.prototype = Object.create(Character.prototype);
 Player.prototype.constructor = Player;
 
 Player.prototype.update = function() {
-    if (player.y < 45) {
-        player.reset();
+    if (this.y < 45) {
+        this.reset();
     }
 };
 
@@ -256,24 +257,25 @@ Gem.prototype.update = function() {
         gemCount++;
         starSpawn = gemCount % 9;
         turnBackSpawn = gemCount % 4;
-        this.x = posX[Math.floor(Math.random() * 5)];
-        this.y = posY[Math.floor(Math.random() * 3)];
+        gem.reset();
     }
     if (starSpawn === 0 && gemCount != 0) {
-        star.x = posX[Math.floor(Math.random() * 5)];
-        star.y = posY[Math.floor(Math.random() * 3)];
+        star.reset();
         starSpawn = 1;
     }
     if (grabKey === 0 && gemCount === 10) {
-        key.x = posX[Math.floor(Math.random() * 5)];
-        key.y = posY[Math.floor(Math.random() * 3)];
+        key.reset();
         grabKey++;
     }
     if (turnBackSpawn === 0 && gemCount != 0) {
-        enemy7.x = randomX[Math.floor(Math.random() * 5)];
-        enemy7.y = posY[Math.floor(Math.random() * 3)];
+        enemy7.reset();
         turnBackStatus = 1;
     }
+};
+
+Gem.prototype.reset = function () {
+    this.x = posX[Math.floor(Math.random() * posX.length)];
+    this.y = posY[Math.floor(Math.random() * 3)];
 };
 
 
