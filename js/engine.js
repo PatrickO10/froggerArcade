@@ -103,6 +103,7 @@ var Engine = (function(global) {
         star.update();
         gem.update();
         key.update();
+        currScore.update();
         guardian.update(dt);
     }
 

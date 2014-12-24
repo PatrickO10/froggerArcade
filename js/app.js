@@ -1,4 +1,5 @@
 //var gems = 1;
+var score = 0;
 var starSpawn = 0;
 var grabKey = 0;
 var turnBackSpawn = 0;
@@ -39,14 +40,45 @@ var GameOver = function() {
         ctx.fillText("OVER", 60, 300);
     }
 };
+
+var scoreboard = document.getElementById('scoreboard');
+
+var ScoreB = function () {
+        scoreboard.innerHTML = "Score: " + score;
+};
+// Changes the scoreboard color
+ScoreB.prototype.changeColor = function() {
+    if (score < 1000) {
+        scoreboard.style.color = 'yellow';
+    } else if (score > 1000 && score < 5000) {
+        scoreboard.style.color = 'blue';
+    } else if (score > 5000 && score < 10000) {
+        scoreboard.style.color = 'red';
+    } else if (score > 10000) {
+        scoreboard.style.color = 'teal'
+    }
+
+};
+
+ScoreB.prototype.update = function() {
+    score = gemCount * 450;
+    currScore.changeColor();
+    scoreboard.innerHTML = "Score: " + score;
+}
  
 var Character = function(sprite) {
     this.sprite = sprite;
-    //this.speed = randomSpeed();
 };
 
 Character.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+Character.prototype.collision = function(x1, y1, x2, y2) {
+    if (x1 <= (x2 + 50) && x2 <= (x1 + 50) &&
+        y1 <= (y2 + 50) && y2 <= (y1 + 50)) {
+           return true;
+    }
 };
 
 // Enemies our player must avoid
@@ -72,11 +104,11 @@ Enemy.prototype.update = function(dt) {
         this.reset();
     }
     // Checks collision for player and enemy bug
-    if(player_collision(this.x, this.y)) {
+    if(player.collision(player.x, player.y, this.x, this.y)){
         player.reset();
     }
     // Checks collision for guardian and enemy bug
-    if(guardian_collision(this.x, this.y)) {
+    if(guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
         this.reset();
     }
 };
@@ -92,29 +124,6 @@ Enemy.prototype.resetSprite = function() {
     return randomSprite();
 };
 
-// Collisions
-
-function guardian_collision (x, y) {
-    if (guardian.x <= (x + 50) && x <= (guardian.x + 50)
-      && guardian.y === y) {
-        return true;
-    }
-};
-
-function player_collision (x, y) {
-    if (player.x <= (x + 50) && x <= (player.x + 50) &&
-        player.y <= (y + 50) && y <= (player.y + 50)) {
-        //player.reset();
-        return true;
-    }
-};
-
-function diagon_collision (x, y) {
-    if (guardian.x <= (x + 50) && x <= (guardian.x + 50) &&
-        guardian.y <= (y + 50) && y <= (guardian.y + 50)) {
-            enemy5.x = -100;
-            enemy5.y = 45;
-    }
 };
 
 var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
@@ -130,7 +139,7 @@ Guardian.prototype = Object.create(Character.prototype);
 Guardian.prototype.constructor = Guardian;
 
 Guardian.prototype.update = function(dt) {
-    if (this.x > -50 && keyCount === 1) {
+    if (this.x > -50 && keyCount === 1 && score > 4500) {
         this.x -= 200 * dt;
     } else {
         this.reset();
@@ -169,10 +178,11 @@ DiagonalBug.prototype.update = function(dt) {
             checkStatus = 0;
         }
     };
-    if (player_collision(this.x, this.y)) {
+    if (player.collision(player.x, player.y, this.x, this.y)) {
         player.reset();
-    }
-    diagon_collision(this.x, this.y); 
+    };
+    if (guardian.collision(guardian.x, guardian.y, this.x, this.y))
+        this.reset();
 };
 
 DiagonalBug.prototype.reset = function() {
@@ -263,7 +273,7 @@ Gem.prototype.update = function() {
         star.reset();
         starSpawn = 1;
     }
-    if (grabKey === 0 && gemCount === 10) {
+    if (grabKey === 0 && gemCount > 10) {
         key.reset();
         grabKey++;
     }
@@ -274,7 +284,7 @@ Gem.prototype.update = function() {
 };
 
 Gem.prototype.reset = function () {
-    this.x = posX[Math.floor(Math.random() * posX.length)];
+    this.x = posX[Math.floor(Math.random() * 5)];
     this.y = posY[Math.floor(Math.random() * 3)];
 };
 
@@ -292,6 +302,7 @@ Key.prototype.acquire = function() {
     if (player.x === this.x && player.y === this.y) {
         this.x = -100;
         this.y = -100;
+        keyCount++;
     }
 }
 
@@ -334,12 +345,12 @@ Heart.prototype.resetSprite = function() {
 Heart.prototype.update = function(dt) {
     if (this.x <= 500) {
         this.x += this.speed * dt;
-        //console.log(this.randomSpeed());
     } else {
         this.reset();
     }
     if (player_collision(this.x, this.y)) {
         this.reset();
+        gemCount--;
     }
 };
 
@@ -360,6 +371,7 @@ var guardian = new Guardian(randomGuard());
 var gem = new Gem();
 var star = new Star();
 var key = new Key();
+var currScore = new ScoreB();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
