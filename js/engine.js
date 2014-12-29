@@ -139,14 +139,19 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
         }
-        if(lifeCount > 0){
+        if(lifeCount >= 1){
             renderEntities();
         } else {
+            lifeCount = 0;
             ctx.clearRect(0, 0, 505, 606);
-            ctx.font = "bold 72pt serif";
-            ctx.fillStyle = "#000000";
-            ctx.fillText("GAME", 110, 150);
-            ctx.fillText("OVER", 115, 300);
+            ctx.font = "bold 102px impact";
+            ctx.fillStyle = scoreboard.style.color;
+            ctx.strokeStyle = "#000000";
+            ctx.fillText("GAME", 150, 150);
+            ctx.fillText("OVER!!", 155, 240);
+            ctx.strokeText("GAME", 150, 150);
+            ctx.strokeText("OVER!!", 155, 240);
+            
         }
     }
 
@@ -174,11 +179,6 @@ var Engine = (function(global) {
      */
     function reset() {
         // noop
-        ctx.clearRect(0, 0, 505, 606);
-        ctx.font = "bold 72pt serif";
-        ctx.fillStyle = "#000000";
-        ctx.fillText("GAME", 60, 150);
-        ctx.fillText("OVER", 60, 300);
     }
 
     /* Go ahead and load all of the images we know we're going to need to

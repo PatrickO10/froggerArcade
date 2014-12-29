@@ -1,77 +1,100 @@
 var score = 0;
-var grabKey = 0;
-var turnBackSpawn = 0;
-var keyCount = 0;
-var gemCount = 0;
+var checkStatus = 0; // for Diagonal Bug
+var grabKey = 0;  // Once grabKey is 1 the key will never respawn again
+var keyCount = 0; 
+var gemCount = 0; // Number of gems collected
 var lifeCount = 3;
-var turnBackStatus = 0;
-var posY = [45, 130, 215, 300, 385];
-var posX = [0, 100, 200, 300, 400, 500];
-var randomX = [-100, -200, -300, -400, -500];
-var enemySprites = ['images/enemy-bug.png', 'images/enemy-bug-orange.png', 'images/enemy-bug-sick.png',
-        'images/enemy-bug-shadow.png', 'images/enemy-bug-grey.png', 'images/enemy-bug-blue.png'];
+var turn = 0; // For turnback bug
+var posY = [45, 130, 215, 300, 385]; // An Array of Y positions
+var posX = [0, 100, 200, 300, 400, 500]; // An Array of X positions for gems
+var randomX = [-100, -200, -300, -400, -500]; // An Array of X positions for enemybugs
+var speed = [45, 90, 135, 180, 315, 360, 720]; // An Array of speed
+// An Array of gem sprites
+var gemSprites = ['images/Gem Orange.png', 'images/Gem Blue.png',
+    'images/Gem Green.png'];
+// An Array of enemy sprites
+var enemySprites = ['images/enemy-bug.png', 'images/enemy-bug-orange.png', 
+    'images/enemy-bug-sick.png', 'images/enemy-bug-shadow.png',
+    'images/enemy-bug-grey.png', 'images/enemy-bug-blue.png'];
+// An Array of guardian sprites
+var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
+        'images/char-princess-girl.png', 'images/char-cat-girl.png'];
 
-// Returns a random sprite
-var randomSprite = function () {
-    return enemySprites[Math.floor(Math.random() * enemySprites.length)];
-};
-
-// Returns a random guard
-var randomGuard = function () {
-    return guards[Math.floor(Math.random() * guards.length)];
-};
-
-// Returns a random speed
-var randomSpeed = function () {
-    return speed[Math.floor(Math.random() * speed.length)];
-};
 
 var scoreboard = document.getElementById('scoreboard');
 
 var ScoreB = function () {
-        scoreboard.innerHTML = "Score: " + score + "   Lives: " + lifeCount;
-};
-
-// Changes the scoreboard color
-ScoreB.prototype.changeColor = function() {
-    if (score < 1000) {
-        scoreboard.style.color = 'yellow';
-    } else if (score > 1000 && score < 5000) {
-        scoreboard.style.color = 'blue';
-    } else if (score > 5000 && score < 10000) {
-        scoreboard.style.color = 'red';
-    } else if (score > 10000) {
-        scoreboard.style.color = 'teal'
-    }
-};
-
-ScoreB.prototype.update = function() {
-    score = gemCount * 450;
-    currScore.changeColor();
+    // Puts the current Score and Lives in the scoreboard div
     scoreboard.innerHTML = "Score: " + score + "   Lives: " + lifeCount;
+};
+
+// Changes the scoreboard style color
+ScoreB.prototype = {
+    changeColor: function() {
+        if (score < 1000) {
+            scoreboard.style.color = 'yellow';
+        } else if (score > 1000 && score < 10000) {
+            score += 1000;
+            scoreboard.style.color = 'blue';
+        } else if (score > 10000 && score < 30000) {
+            score += 2500;
+            scoreboard.style.color = 'red';
+        } else if (score > 30000) {
+            score += 5000;
+            scoreboard.style.color = 'teal'
+        }
+    },
+    update: function() { // Updates the score and lifeCount with each game tick
+        score = gemCount * 450;
+        currScore.changeColor();
+        scoreboard.innerHTML = "Score: " + score + "   Lives: " + lifeCount;
+    }
 }
- 
+ // Character entity is at the top of the Heirarchy
 var Character = function(sprite) {
     this.sprite = sprite;
+    this.speed = this.randomSpeed();
 };
 
-Character.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
-
-Character.prototype.collision = function(x1, y1, x2, y2) {
-    if (x1 <= (x2 + 50) && x2 <= (x1 + 50) &&
+Character.prototype = {
+    render: function() {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    },
+    collision: function(x1, y1, x2, y2) { // Checks for collision
+        if (x1 <= (x2 + 50) && x2 <= (x1 + 50) &&
         y1 <= (y2 + 50) && y2 <= (y1 + 50)) {
-           return true;
+            return true; // if true returns true
+      }
+    },
+    collisionReset: function() {
+        if (player.collision(player.x, player.y, this.x, this.y)) {
+            player.reset(); // If player collides with enemy bug reset player
+        };
+        if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
+            this.reset(); // If enemy bug collides with guardian
+        };                      // then reset enemy bug
+    },
+    randomSpeed: function() { // Returns a random speed
+        return speed[Math.floor(Math.random() * speed.length)];
+    },
+    randomGem: function () {
+        // Returns random gem sprite
+        return gemSprites[Math.floor(Math.random() * gemSprites.length)];
+    },
+    randomSprite: function() {
+        // Returns random enemy sprite
+        return enemySprites[Math.floor(Math.random() * enemySprites.length)];
+    },
+    randomGuard: function () {
+        // Returns random guard sprite
+        return guards[Math.floor(Math.random() * guards.length)];
     }
-};
+}
 
 // Enemies our player must avoid
-
 var Enemy = function(sprite) {
-    Character.call(this, sprite);
-    this.speed = randomSpeed();
-};
+    Character.call(this, sprite, speed);
+}
 
 // Child of Character
 Enemy.prototype = Object.create(Character.prototype);
@@ -80,94 +103,102 @@ Enemy.prototype.constructor = Enemy;
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
     if (this.x <= 500) {
-        // this.x += speed[Math.floor(Math.random() * 7)] * dt;
-        this.x += this.speed * dt;
+        this.x += this.speed * dt; // Enemy bug moves right
     } else {
-        this.reset();
+        this.reset(); // Reset the bug back to the beginning
     }
-    // Checks collision for player and enemy bug
-    if(player.collision(player.x, player.y, this.x, this.y)){
-        player.reset();
-    }
-    // Checks collision for guardian and enemy bug
-    if(guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
-        this.reset();
-    }
+    this.collisionReset();
+}
+
+Enemy.prototype.reset = function() { // Reset for the enemy bugs
+    this.x = randomX[Math.floor(Math.random() * 3)]; // Sets a random X position
+    this.y = posY[Math.floor(Math.random() * 3)]; // Sets a random Y position
+    this.speed = this.randomSpeed(); // Sets a random speed
+    this.sprite = this.randomSprite(); // Sets a random enemy sprite
+}
+
+var Heart = function(sprite) {
+    Character.call(this, sprite, speed);
 };
 
-Enemy.prototype.reset = function() {
-    this.x = randomX[Math.floor(Math.random() * 3)];
-    this.y = posY[Math.floor(Math.random() * 3)];
-    this.speed = randomSpeed();
+// Grand Child of Character
+Heart.prototype = Object.create(Enemy.prototype);
+Heart.prototype.constructor = Heart;
+
+Heart.prototype.resetSprite = function() {
+    return 'images/Heart.png';
+};
+
+Heart.prototype.update = function(dt) {
+    if (this.x <= 500) {
+        this.x += this.speed * dt; // Moves bug to the right
+    } else {
+        this.reset(); // Uses the reset() found in Enemy 
+    }
+    // If the heart collides with the player
+    if (player.collision(player.x, player.y, this.x, this.y)) {
+        this.reset();
+        gemCount--; // Takes away a gem
+        lifeCount++; // Adds a life
+    }
+    // Since the Enemy reset() method resets the sprite to a random 
+    // enemy sprite. This corrects that
     this.sprite = this.resetSprite();
 };
 
-Enemy.prototype.resetSprite = function() {
-    return randomSprite();
+// TurnBack bug goes across the map and comes back
+var TurnBack = function() {
+    Character.call(this, speed);
+    this.reset();
 };
 
-var TurnBack = function(sprite) {
-    Enemy.call(this, sprite)
-};
-
-// Grand-Child of Character
+// Grand Child of Character
 TurnBack.prototype = Object.create(Enemy.prototype);
 TurnBack.prototype.constructor = TurnBack;
 
 TurnBack.prototype.update = function(dt) {
-        if (this.x <= 500 && turnBackStatus === 1) {
-            this.x += speed[Math.floor(Math.random() * 7)] * dt; // The enemy bug goes left to right
-        } else {
-            turnBackStatus = 0;
-            this.x -= 200 * dt; // the enemy bug goes right to left
+    if (this.x <= 500 && turn === 0) {
+        this.x += this.speed * dt;
+        if (this.x > 500) { // var turn becomes 1
+            return turn++; // Bug will stop going right
         }
-        if (this.x < -100) {
-            this.x = -100;
+    } else {
+         this.x -= this.speed * dt; // When var turn does not equal 0 bug will go left
+         if (this.x < -1000) {  // When bug becomes less than -1000
+            this.reset(); // Bug will reset and var turn will go back to 0
+            return turn--;
         }
-        if (player.collision(player.x, player.y, this.x, this.y)) {
-            player.reset();
-        };
-        if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
-            this.reset();
-        };
-
+    }
+    this.collisionReset();
 };
 
-var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
-        'images/char-princess-girl.png', 'images/char-cat-girl.png'];
 // Guardians our enemies must avoid!
 
-var Guardian = function(sprite) {
-    //Character.call(this, sprite);
+var Guardian = function() {
     this.reset();
 };
 
-// Great-Grand-Child of Character
-Guardian.prototype = Object.create(TurnBack.prototype);
+// Child of Character
+Guardian.prototype = Object.create(Character.prototype);
 Guardian.prototype.constructor = Guardian;
 
 Guardian.prototype.update = function(dt) {
     if (this.x > -50 && keyCount === 1 && score >= 4500) {
-        this.x -= 200 * dt;
+        this.x -= 200 * dt;  // Guardian moves left
     } else {
         this.reset();
     }
+
 };
 
 Guardian.prototype.reset = function() {
-    this.x = 500;
+    this.x = 550;
     this.y = posY[Math.floor(Math.random() * 3)];
-    this.sprite = guards[Math.floor(Math.random() * 4)];
+    this.sprite = this.randomGuard();
 };
 
-var checkStatus = 0;
-var i = 0;
-speed = [45, 90, 135, 180, 315, 360, 720];
-
+// Goes diagonally down the map
 var DiagonalBug = function(sprite) {
     Character.call(this, sprite);
     this.speed = 130;
@@ -175,37 +206,39 @@ var DiagonalBug = function(sprite) {
     this.y = 45;
 };
 
-// Great-Great-Grand Child of Character
-DiagonalBug.prototype = Object.create(Guardian.prototype);
+// Child of Character
+DiagonalBug.prototype = Object.create(Character.prototype);
 DiagonalBug.prototype.constructor = DiagonalBug;
 
 DiagonalBug.prototype.update = function(dt) {
-    if (gemCount >= 5 || checkStatus === 1) {
+    if (gemCount >= 5 || checkStatus === 1) { // Doesn't spawn until gemCount >= 5
         checkStatus = 1;
-        this.x += this.speed * dt;
-        this.y += 50 * dt;
+        this.x += this.speed * dt; // Moves across at this speed
+        this.y += 50 * dt;  // Moves down at this speed
         if (this.x > 399 && gemCount > 5) {
-            //this.x = -100;
-            //this.y = 45;
-            this.reset();
-            checkStatus = 0;
+            this.reset();  // Resets once it gets to the end
         }
     };
-    if (player.collision(player.x, player.y, this.x, this.y)) {
-        player.reset();
-    };
-    if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
-        this.reset();
-    };
-};
+    this.collisionReset();
+}
 
 DiagonalBug.prototype.reset = function() {
+    // Resets the position
     this.x = -100;
     this.y = 45;
-};
+}
 
-// Now write your own player class
-// This class requires an update(), render() and
+DiagonalBug.prototype.collisionReset = function() {
+    // Needs its own collisionReset or else bug will spawn at different Y positions
+    if (player.collision(player.x, player.y, this.x, this.y)) {
+        player.reset();
+    }
+    if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
+        this.reset();
+    }
+}
+
+// This class required an update(), render() and
 // a handleInput() method.
 var Player = function (sprite) {
     Character.call(this, sprite);
@@ -219,14 +252,15 @@ Player.prototype.constructor = Player;
 
 Player.prototype.update = function() {
     if (this.y < 45) {
+        gemCount += 1;  // Sacrifice a life to get 450 points by jumping in water
         this.reset();
     }
 };
 
 Player.prototype.reset = function() {
-    lifeCount--;
+    lifeCount--; // If resets lose a life
     this.x = 200;
-    this.y = 300;
+    this.y = 385;
 };
 
 Player.prototype.handleInput = function (key) {
@@ -247,10 +281,11 @@ Player.prototype.handleInput = function (key) {
     }
 };
 
-var Gem = function() {
+// Collect gems to increase score and unlock special features, like guardians
+var Gem = function(sprite) {
     this.x = posX[Math.floor(Math.random() * 5)];
     this.y = posY[Math.floor(Math.random() * 3)];
-    this.sprite = 'images/Gem Orange.png';
+    Character.call(this, sprite);
 };
 
 // Child of Character
@@ -258,97 +293,62 @@ Gem.prototype = Object.create(Character.prototype);
 Gem.prototype.constructor = Gem;
 
 Gem.prototype.update = function() {
-    if (player.y === this.y && player.x === this.x) {
+    if (player.y === this.y && player.x === this.x) { // Player grabs the gem
         gemCount++;
-        turnBackSpawn = gemCount % 4;
-        gem.reset();
-    }
-    if (grabKey === 0 && gemCount >= 10) {
-        key.reset();
-        grabKey++;
-    }
-    if (turnBackSpawn === 0 && gemCount != 0) {
-        enemy7.reset();
-        turnBackStatus = 1;
+        this.itemReset();
+        this.sprite = this.randomGem();
     }
 };
 
-Gem.prototype.reset = function () {
+Gem.prototype.itemReset = function() {
+    // Resets the item on the map where player can grab it
     this.x = posX[Math.floor(Math.random() * 5)];
     this.y = posY[Math.floor(Math.random() * 3)];
-};
+}
 
-
-var Key = function() {
-    this.sprite = 'images/key.png';
+var Key = function(sprite) {
+    Character.call(this, sprite);
+    // Set the key in a far distant land that the player will never reach
+    this.x = 1000; 
+    this.y = 1000;
 };
 
 // Grand Child of Character
 Key.prototype = Object.create(Gem.prototype);
 Key.prototype.update = function() {
-    this.acquire();
-};
-
-Key.prototype.acquire = function() {
     if (player.x === this.x && player.y === this.y) {
         this.x = -100;
         this.y = -100;
         keyCount++;
     }
-}
-
-var Heart = function(sprite) {
-    Character.call(this, sprite, speed);
-};
-
-// Great-Grand Child of Character
-Heart.prototype = Object.create(Enemy.prototype);
-Heart.prototype.constructor = Heart;
-
-Heart.prototype.acquire = function () {
-    if (player.x === this.x && player.y === this.y) {
-        lifeCount = lifeCount + 1;
-        this.reset();
+    // Once player grabs 10 gems a key appears
+    if (grabKey === 0 && gemCount >= 10) {
+        key.itemReset(); // Will travel up to its parent to use this method
+        this.sprite = 'images/key.png';
+        grabKey++;
     }
 };
 
-Heart.prototype.resetSprite = function() {
-    return 'images/Heart.png';
-};
-
-Heart.prototype.update = function(dt) {
-    if (this.x <= 500) {
-        this.x += this.speed * dt;
-    } else {
-        this.reset();
-    }
-    if (player.collision(player.x, player.y, this.x, this.y)) {
-        this.reset();
-        gemCount--;
-        lifeCount++;
-    }
-};
-
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-var enemy0 = new Enemy(randomSprite());
-var enemy1 = new Enemy(randomSprite());
-var enemy2 = new Enemy(randomSprite());
-var enemy3 = new Enemy(randomSprite());
-var enemy4 = new Enemy(randomSprite());
-var enemy5 = new DiagonalBug(randomSprite());
+// Instantiated my objects.
+// Placed all enemy objects in an array called allEnemies
+// Placed the player object in a variable called player
+var enemy0 = new Enemy('images/enemy-bug.png');
+var enemy1 = new Enemy('images/enemy-bug.png');
+var enemy2 = new Enemy('images/enemy-bug.png');
+var enemy3 = new Enemy('images/enemy-bug.png');
+var enemy4 = new Enemy('images/enemy-bug.png');
+var enemy5 = new DiagonalBug('images/enemy-bug.png');
 var enemy6 = new Heart('images/Heart.png');
-var enemy7 = new TurnBack(randomSprite());
+var enemy7 = new TurnBack();
 var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7];
 var player = new Player('images/char-boy.png');
-var guardian = new Guardian(randomGuard());
-var gem = new Gem();
-var key = new Key();
+var guardian = new Guardian();
+var gem = new Gem('images/Gem Orange.png');
+var key = new Key('images/key.png');
 var currScore = new ScoreB();
 
 // This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
+// Player.handleInput() method.
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
         37: 'left',
