@@ -1,7 +1,7 @@
 var score = 0;
 var checkStatus = 0; // for Diagonal Bug
-var grabKey = 0;  // Once grabKey is 1 the key will never respawn again
-var keyCount = 0; 
+var grabKey = 0;  // Once grabKey is 1 the key respawns on the map
+var keyCount = 0; // Once keyCount is 1 the key will never respawn again
 var gemCount = 0; // Number of gems collected
 var lifeCount = 3;
 var turn = 0; // For turnback bug
@@ -130,6 +130,7 @@ Heart.prototype.resetSprite = function() {
     return 'images/Heart.png';
 };
 
+// Polymorphism - Same method name (update) as Enemy parent but different behavior
 Heart.prototype.update = function(dt) {
     if (this.x <= 500) {
         this.x += this.speed * dt; // Moves bug to the right
@@ -145,13 +146,13 @@ Heart.prototype.update = function(dt) {
     // Since the Enemy reset() method resets the sprite to a random 
     // enemy sprite. This corrects that
     this.sprite = this.resetSprite();
-};
+}
 
 // TurnBack bug goes across the map and comes back
 var TurnBack = function() {
     Character.call(this, speed);
     this.reset();
-};
+}
 
 // Grand Child of Character
 TurnBack.prototype = Object.create(Enemy.prototype);
@@ -191,7 +192,7 @@ Guardian.prototype.update = function(dt) {
     }
 
 };
-
+// Resets the x, y, and sprite
 Guardian.prototype.reset = function() {
     this.x = 550;
     this.y = posY[Math.floor(Math.random() * 3)];
