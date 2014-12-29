@@ -94,13 +94,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        if (lifeCount > 0){
-            player.update();
-        } else {
-            GameOver();
-        }
-        //player.update();
-        star.update();
+        player.update();
         gem.update();
         key.update();
         currScore.update();
@@ -145,9 +139,15 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
         }
-
-
-        renderEntities();
+        if(lifeCount > 0){
+            renderEntities();
+        } else {
+            ctx.clearRect(0, 0, 505, 606);
+            ctx.font = "bold 72pt serif";
+            ctx.fillStyle = "#000000";
+            ctx.fillText("GAME", 110, 150);
+            ctx.fillText("OVER", 115, 300);
+        }
     }
 
     /* This function is called by the render function and is called on each game
@@ -165,7 +165,6 @@ var Engine = (function(global) {
         player.render();
         gem.render();
         key.render();
-        star.render();
         guardian.render();
     }
 
@@ -175,6 +174,11 @@ var Engine = (function(global) {
      */
     function reset() {
         // noop
+        ctx.clearRect(0, 0, 505, 606);
+        ctx.font = "bold 72pt serif";
+        ctx.fillStyle = "#000000";
+        ctx.fillText("GAME", 60, 150);
+        ctx.fillText("OVER", 60, 300);
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -201,8 +205,7 @@ var Engine = (function(global) {
         'images/Gem Blue.png',
         'images/Gem Green.png',
         'images/key.png',
-        'images/Heart.png',
-        'images/Star.png'
+        'images/Heart.png'
     ]);
     Resources.onReady(init);
 

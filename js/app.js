@@ -1,15 +1,10 @@
-//var gems = 1;
 var score = 0;
-var starSpawn = 0;
 var grabKey = 0;
 var turnBackSpawn = 0;
 var keyCount = 0;
 var gemCount = 0;
 var lifeCount = 3;
 var turnBackStatus = 0;
-var wall = 400;
-var enemyReturn = true;
-var playerSprite = 'images/char-boy.png';
 var posY = [45, 130, 215, 300, 385];
 var posX = [0, 100, 200, 300, 400, 500];
 var randomX = [-100, -200, -300, -400, -500];
@@ -31,21 +26,12 @@ var randomSpeed = function () {
     return speed[Math.floor(Math.random() * speed.length)];
 };
 
-var GameOver = function() {
-    if (lifeCount <= 0) {
-        ctx.clearRect(0, 0, 505, 606);
-        ctx.font = "bold 72pt serif";
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillText("GAME", 60, 150);
-        ctx.fillText("OVER", 60, 300);
-    }
-};
-
 var scoreboard = document.getElementById('scoreboard');
 
 var ScoreB = function () {
-        scoreboard.innerHTML = "Score: " + score;
+        scoreboard.innerHTML = "Score: " + score + "   Lives: " + lifeCount;
 };
+
 // Changes the scoreboard color
 ScoreB.prototype.changeColor = function() {
     if (score < 1000) {
@@ -57,13 +43,12 @@ ScoreB.prototype.changeColor = function() {
     } else if (score > 10000) {
         scoreboard.style.color = 'teal'
     }
-
 };
 
 ScoreB.prototype.update = function() {
     score = gemCount * 450;
     currScore.changeColor();
-    scoreboard.innerHTML = "Score: " + score;
+    scoreboard.innerHTML = "Score: " + score + "   Lives: " + lifeCount;
 }
  
 var Character = function(sprite) {
@@ -88,6 +73,7 @@ var Enemy = function(sprite) {
     this.speed = randomSpeed();
 };
 
+// Child of Character
 Enemy.prototype = Object.create(Character.prototype);
 Enemy.prototype.constructor = Enemy;
 
@@ -124,6 +110,31 @@ Enemy.prototype.resetSprite = function() {
     return randomSprite();
 };
 
+var TurnBack = function(sprite) {
+    Enemy.call(this, sprite)
+};
+
+// Grand-Child of Character
+TurnBack.prototype = Object.create(Enemy.prototype);
+TurnBack.prototype.constructor = TurnBack;
+
+TurnBack.prototype.update = function(dt) {
+        if (this.x <= 500 && turnBackStatus === 1) {
+            this.x += speed[Math.floor(Math.random() * 7)] * dt; // The enemy bug goes left to right
+        } else {
+            turnBackStatus = 0;
+            this.x -= 200 * dt; // the enemy bug goes right to left
+        }
+        if (this.x < -100) {
+            this.x = -100;
+        }
+        if (player.collision(player.x, player.y, this.x, this.y)) {
+            player.reset();
+        };
+        if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
+            this.reset();
+        };
+
 };
 
 var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
@@ -135,11 +146,12 @@ var Guardian = function(sprite) {
     this.reset();
 };
 
-Guardian.prototype = Object.create(Character.prototype);
+// Great-Grand-Child of Character
+Guardian.prototype = Object.create(TurnBack.prototype);
 Guardian.prototype.constructor = Guardian;
 
 Guardian.prototype.update = function(dt) {
-    if (this.x > -50 && keyCount === 1 && score > 4500) {
+    if (this.x > -50 && keyCount === 1 && score >= 4500) {
         this.x -= 200 * dt;
     } else {
         this.reset();
@@ -163,7 +175,8 @@ var DiagonalBug = function(sprite) {
     this.y = 45;
 };
 
-DiagonalBug.prototype = Object.create(Enemy.prototype);
+// Great-Great-Grand Child of Character
+DiagonalBug.prototype = Object.create(Guardian.prototype);
 DiagonalBug.prototype.constructor = DiagonalBug;
 
 DiagonalBug.prototype.update = function(dt) {
@@ -181,34 +194,14 @@ DiagonalBug.prototype.update = function(dt) {
     if (player.collision(player.x, player.y, this.x, this.y)) {
         player.reset();
     };
-    if (guardian.collision(guardian.x, guardian.y, this.x, this.y))
+    if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
         this.reset();
+    };
 };
 
 DiagonalBug.prototype.reset = function() {
     this.x = -100;
     this.y = 45;
-};
-
-var TurnBack = function(sprite) {
-    Enemy.call(this, sprite)
-}
-
-TurnBack.prototype = Object.create(Enemy.prototype);
-TurnBack.prototype.constructor = TurnBack;
-
-TurnBack.prototype.update = function(dt) {
-        if (this.x <= 500 && turnBackStatus === 1) {
-            this.x += speed[Math.floor(Math.random() * 7)] * dt;
-        } else {
-        turnBackStatus = 0;
-        this.x -= 200 * dt;
-        
-    }
-    if (this.x < -100) {
-            this.x = -100;
-    }
-
 };
 
 // Now write your own player class
@@ -220,6 +213,7 @@ var Player = function (sprite) {
     this.y = 300;
 };
 
+// Child of Character
 Player.prototype = Object.create(Character.prototype);
 Player.prototype.constructor = Player;
 
@@ -259,21 +253,17 @@ var Gem = function() {
     this.sprite = 'images/Gem Orange.png';
 };
 
+// Child of Character
 Gem.prototype = Object.create(Character.prototype);
 Gem.prototype.constructor = Gem;
 
 Gem.prototype.update = function() {
     if (player.y === this.y && player.x === this.x) {
         gemCount++;
-        starSpawn = gemCount % 9;
         turnBackSpawn = gemCount % 4;
         gem.reset();
     }
-    if (starSpawn === 0 && gemCount != 0) {
-        star.reset();
-        starSpawn = 1;
-    }
-    if (grabKey === 0 && gemCount > 10) {
+    if (grabKey === 0 && gemCount >= 10) {
         key.reset();
         grabKey++;
     }
@@ -293,7 +283,8 @@ var Key = function() {
     this.sprite = 'images/key.png';
 };
 
-Key.prototype = Object.create(Gem.prototype); // Taketh all that you know from thy gem
+// Grand Child of Character
+Key.prototype = Object.create(Gem.prototype);
 Key.prototype.update = function() {
     this.acquire();
 };
@@ -306,37 +297,20 @@ Key.prototype.acquire = function() {
     }
 }
 
-var Star = function() {
-    this.sprite = 'images/Star.png';
-};
-
-Star.prototype.update = function () {
-    this.acquire();
-};
-
-Star.prototype.acquire = function () {
-    if (player.x === this.x && player.y === this.y) {
-        this.reset();
-        lifeCount++;
-    }
-};
-Star.prototype.reset = function() {
-    this.x = -100;
-    this.y = -100;
-};
-
-Star.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
-
 var Heart = function(sprite) {
     Character.call(this, sprite, speed);
 };
 
+// Great-Grand Child of Character
 Heart.prototype = Object.create(Enemy.prototype);
-//Heart.prototype = Object.create(Star.prototype.starupdate);
 Heart.prototype.constructor = Heart;
-Heart.prototype.acquire = Star.prototype.acquire;
+
+Heart.prototype.acquire = function () {
+    if (player.x === this.x && player.y === this.y) {
+        lifeCount = lifeCount + 1;
+        this.reset();
+    }
+};
 
 Heart.prototype.resetSprite = function() {
     return 'images/Heart.png';
@@ -348,9 +322,10 @@ Heart.prototype.update = function(dt) {
     } else {
         this.reset();
     }
-    if (player_collision(this.x, this.y)) {
+    if (player.collision(player.x, player.y, this.x, this.y)) {
         this.reset();
         gemCount--;
+        lifeCount++;
     }
 };
 
@@ -369,7 +344,6 @@ var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7
 var player = new Player('images/char-boy.png');
 var guardian = new Guardian(randomGuard());
 var gem = new Gem();
-var star = new Star();
 var key = new Key();
 var currScore = new ScoreB();
 
