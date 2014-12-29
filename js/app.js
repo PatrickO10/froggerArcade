@@ -324,7 +324,7 @@ Key.prototype.update = function() {
     // Once player grabs 10 gems a key appears
     if (grabKey === 0 && gemCount >= 10) {
         key.itemReset(); // Will travel up to its parent to use this method
-        this.sprite = 'images/key.png';
+        this.sprite = 'images/Key.png';
         grabKey++;
     }
 };
@@ -344,7 +344,7 @@ var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7
 var player = new Player('images/char-boy.png');
 var guardian = new Guardian();
 var gem = new Gem('images/Gem Orange.png');
-var key = new Key('images/key.png');
+var key = new Key('images/Key.png');
 var currScore = new ScoreB();
 
 // This listens for key presses and sends the keys to your
