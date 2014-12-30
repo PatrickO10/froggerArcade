@@ -1,13 +1,13 @@
-<h1> froggerArcade </h1>
+# froggerArcade 
 =============
 
 Front-End nanodegree frogger arcade clone.
 
-You can play the game online at http://patricko10.github.io/froggerArcade
+You can play the game online at [this link](http://patricko10.github.io/froggerArcade)
 
 If you want to run it on your local machine.  Download and unzip all files to a local directory, and then open the index.html with your favorite browser that runs JavaScript.
 
-<h1>How to play</h1>
+## How to play
 =============
 
 Use your arrow keys to move.
