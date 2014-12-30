@@ -130,10 +130,10 @@ Enemy.prototype.update = function(dt) {
 }
 
 Enemy.prototype.reset = function() { // Reset for the enemy bugs
+    this.sprite = this.randomSprite(); // Sets a random enemy sprite
     this.x = randomX[Math.floor(Math.random() * 3)]; // Sets a random X position
     this.y = posY[Math.floor(Math.random() * 3)]; // Sets a random Y position
     this.speed = this.randomSpeed(); // Sets a random speed
-    this.sprite = this.randomSprite(); // Sets a random enemy sprite
 }
 
 var Heart = function(sprite) {
@@ -163,7 +163,8 @@ Heart.prototype.update = function(dt) {
 }
 
 // TurnBack bug goes across the map and comes back
-var TurnBack = function() {
+var TurnBack = function(sprite) {
+    Character.call(this, sprite);
     this.reset();
 }
 
