@@ -13,11 +13,11 @@ var speed = [45, 90, 135, 180, 315, 360, 720]; // An Array of speed
 var gemSprites = ['images/Gem Orange.png', 'images/Gem Blue.png',
     'images/Gem Green.png'];
 // An Array of enemy sprites
-var enemySprites = ['images/enemy-bug.png', 'images/enemy-bug-orange.png', 
+var enemySprites = ['images/enemy-bug.png', 'images/enemy-bug-orange.png',
     'images/enemy-bug-sick.png', 'images/enemy-bug-shadow.png',
     'images/enemy-bug-grey.png', 'images/enemy-bug-blue.png'];
 // An Array of guardian sprites
-var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
+var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png',
         'images/char-princess-girl.png', 'images/char-cat-girl.png'];
 var speedSwitch = 'off'; // Used to make sure multiplySpeed gets called only once inside the condition
 
@@ -75,7 +75,7 @@ var Character = function(sprite) {
 };
 
 Character.prototype = {
-    render: function() {
+    render: function() { // Method that renders the sprite
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     },
     collision: function(x1, y1, x2, y2) { // Checks for collision
@@ -126,7 +126,7 @@ Enemy.prototype.update = function(dt) {
     } else {
         this.reset(); // Reset the bug back to the beginning
     }
-    this.collisionReset();
+    this.collisionReset(); // Checks for collision. If there is one resets either player or bug
 }
 
 Enemy.prototype.reset = function() { // Reset for the enemy bugs
@@ -144,16 +144,12 @@ var Heart = function(sprite) {
 Heart.prototype = Object.create(Enemy.prototype);
 Heart.prototype.constructor = Heart;
 
-Heart.prototype.resetSprite = function() {
-    return 'images/Heart.png';
-};
-
 // Polymorphism - Same method name (update) as Enemy parent but different behavior
 Heart.prototype.update = function(dt) {
     if (this.x <= 500) {
         this.x += this.speed * dt; // Moves bug to the right
     } else {
-        this.reset(); // Uses the reset() found in Enemy 
+        this.reset(); // Uses the reset() method found in Enemy 
     }
     // If the heart collides with the player
     if (player.collision(player.x, player.y, this.x, this.y)) {
@@ -163,12 +159,11 @@ Heart.prototype.update = function(dt) {
     }
     // Since the Enemy reset() method resets the sprite to a random 
     // enemy sprite. This corrects that
-    this.sprite = this.resetSprite();
+    this.sprite = 'images/Heart.png';
 }
 
 // TurnBack bug goes across the map and comes back
 var TurnBack = function() {
-    Character.call(this, speed);
     this.reset();
 }
 
@@ -234,7 +229,7 @@ DiagonalBug.prototype.update = function(dt) {
         checkStatus = 1;
         this.x += this.speed * dt; // Moves across at this speed
         this.y += 50 * dt;  // Moves down at this speed
-        if (this.x > 399 && gemCount > 5) {
+        if (this.x > 1000 && gemCount > 5) {
             this.reset();  // Resets once it gets to the end
         }
     };
@@ -261,7 +256,7 @@ DiagonalBug.prototype.collisionReset = function() {
 // a handleInput() method.
 var Player = function (sprite) {
     Character.call(this, sprite);
-    this.x = 200;
+    this.x = 200; // Start position of player
     this.y = 300;
 };
 
@@ -302,9 +297,8 @@ Player.prototype.handleInput = function (key) {
 
 // Collect gems to increase score and unlock special features, like guardians
 var Gem = function(sprite) {
-    this.x = posX[Math.floor(Math.random() * 5)];
-    this.y = posY[Math.floor(Math.random() * 3)];
     Character.call(this, sprite);
+    this.itemReset(); // Sets the random position of a gem
 };
 
 // Child of Character
@@ -327,7 +321,7 @@ Gem.prototype.itemReset = function() {
 
 var Key = function(sprite) {
     Character.call(this, sprite);
-    // Set the key in a far distant land that the player will never reach
+    // Set the key in a far distant land that the player will never reach for fun
     this.x = 1000; 
     this.y = 1000;
 };
@@ -336,13 +330,13 @@ var Key = function(sprite) {
 Key.prototype = Object.create(Gem.prototype);
 Key.prototype.update = function() {
     if (player.x === this.x && player.y === this.y) {
-        this.x = -100;
+        this.x = -100; // Once player grabs the key, the key vanishes off never to be seen again
         this.y = -100;
         keyCount++;
     }
-    // Once player grabs 10 gems a key appears
+    // Once player grabs 5 gems a key appears
     if (grabKey === 0 && gemCount >= 5) {
-        key.itemReset(); // Will travel up to its parent to use this method
+        key.itemReset(); // Travels up to its parent (Gem) to use this method
         this.sprite = 'images/Key.png';
         grabKey++;
     }
@@ -363,6 +357,7 @@ var allEnemies = [enemy0, enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7
 var player = new Player('images/char-boy.png');
 var guardian = new Guardian();
 var gem = new Gem('images/Gem Orange.png');
+var gem2 = new Gem('images/Gem Blue.png');
 var key = new Key('images/Key.png');
 var currScore = new ScoreB();
 

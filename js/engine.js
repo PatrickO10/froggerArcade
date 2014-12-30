@@ -80,7 +80,6 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
     }
 
     /* This is called by the update function  and loops through all of the
@@ -96,6 +95,7 @@ var Engine = (function(global) {
         });
         player.update();
         gem.update();
+        gem2.update();
         key.update();
         currScore.update();
         guardian.update(dt);
@@ -140,17 +140,19 @@ var Engine = (function(global) {
             }
         }
         if(lifeCount >= 1){
-            renderEntities();
-        } else {
-            lifeCount = 0;
-            ctx.clearRect(0, 0, 505, 606);
+            renderEntities(); // Render the entities when player still has lives
+        } else {  // Doesn't render entities
+            lifeCount = 0;  // Life set to 0
+            ctx.clearRect(0, 0, 505, 606); // Clears the board
+            ctx.fillStyle = 'indigo'; 
+            ctx.fillRect(0, 0, 505, 303); // Sets the rect indigo
             ctx.font = "bold 102px impact";
             ctx.fillStyle = scoreboard.style.color;
             ctx.strokeStyle = "#000000";
-            ctx.fillText("GAME", 150, 150);
-            ctx.fillText("OVER!!", 155, 240);
-            ctx.strokeText("GAME", 150, 150);
-            ctx.strokeText("OVER!!", 155, 240);
+            ctx.fillText("GAME", 120, 150); // Adds text to the rectangle
+            ctx.fillText("OVER", 125, 240);
+            ctx.strokeText("GAME", 120, 150);
+            ctx.strokeText("OVER", 125, 240);
             
         }
     }
@@ -169,16 +171,9 @@ var Engine = (function(global) {
 
         player.render();
         gem.render();
+        gem2.render();
         key.render();
         guardian.render();
-    }
-
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
-     */
-    function reset() {
-        // noop
     }
 
     /* Go ahead and load all of the images we know we're going to need to
