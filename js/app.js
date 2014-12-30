@@ -19,7 +19,7 @@ var enemySprites = ['images/enemy-bug.png', 'images/enemy-bug-orange.png',
 // An Array of guardian sprites
 var guards = ['images/char-horn-girl.png', 'images/char-pink-girl.png', 
         'images/char-princess-girl.png', 'images/char-cat-girl.png'];
-
+var speedSwitch = 'off'; // Used to make sure multiplySpeed gets called only once inside the condition
 
 var scoreboard = document.getElementById('scoreboard');
 
@@ -30,16 +30,28 @@ var ScoreB = function () {
 
 // Changes the scoreboard style color
 ScoreB.prototype = {
-    changeColor: function() {
-        if (score < 1000) {
+    changeColor: function() { // Method that changes the scoreboard color and updates speed array
+        if (score < 10000) {  // when certain conditions apply
             scoreboard.style.color = 'yellow';
-        } else if (score > 1000 && score < 10000) {
+        } else if (score >= 10000 && score < 20000) {
+            if (speedSwitch === 'off') {
+                speedSwitch = 'on';
+                this.multiplySpeed(1.5); // Changes speed array
+            }
             score += 1000;
             scoreboard.style.color = 'blue';
-        } else if (score > 10000 && score < 30000) {
+        } else if (score >= 20000 && score < 40000) {
+            if (speedSwitch === 'on') {
+                speedSwitch = 'off';
+                this.multiplySpeed(2);
+            }
             score += 2500;
             scoreboard.style.color = 'red';
-        } else if (score > 30000) {
+        } else if (score >= 40000) {
+            if (speedSwitch === 'off') {
+                speedSwitch = 'on';
+                this.multiplySpeed(3);
+            }
             score += 5000;
             scoreboard.style.color = 'teal'
         }
@@ -48,6 +60,12 @@ ScoreB.prototype = {
         score = gemCount * 450;
         currScore.changeColor();
         scoreboard.innerHTML = "Score: " + score + "   Lives: " + lifeCount;
+    },
+    multiplySpeed: function(num) { // Changes each element in speed array
+        for (var i = speed.length - 1; i >= 0; i--) {
+            speed[i] = speed[i] * num;
+        };
+        return speed;
     }
 }
  // Character entity is at the top of the Heirarchy
@@ -69,7 +87,7 @@ Character.prototype = {
     collisionReset: function() {
         if (player.collision(player.x, player.y, this.x, this.y)) {
             player.reset(); // If player collides with enemy bug reset player
-        };
+        }; 
         if (guardian.collision(guardian.x, guardian.y, this.x, this.y)) {
             this.reset(); // If enemy bug collides with guardian
         };                      // then reset enemy bug
@@ -185,7 +203,7 @@ Guardian.prototype = Object.create(Character.prototype);
 Guardian.prototype.constructor = Guardian;
 
 Guardian.prototype.update = function(dt) {
-    if (this.x > -50 && keyCount === 1 && score >= 4500) {
+    if (this.x > -50 && keyCount === 1) {
         this.x -= 200 * dt;  // Guardian moves left
     } else {
         this.reset();
@@ -323,7 +341,7 @@ Key.prototype.update = function() {
         keyCount++;
     }
     // Once player grabs 10 gems a key appears
-    if (grabKey === 0 && gemCount >= 10) {
+    if (grabKey === 0 && gemCount >= 5) {
         key.itemReset(); // Will travel up to its parent to use this method
         this.sprite = 'images/Key.png';
         grabKey++;
