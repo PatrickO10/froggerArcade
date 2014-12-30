@@ -68,7 +68,7 @@ ScoreB.prototype = {
         return speed;
     }
 }
- // Character entity is at the top of the Heirarchy
+ // Character entity is at the top of the Hierarchy
 var Character = function(sprite) {
     this.sprite = sprite;
     this.speed = this.randomSpeed();
