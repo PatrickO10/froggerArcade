@@ -3,6 +3,10 @@
 
 Front-End nanodegree frogger arcade clone.
 
+You can play the game online at http://patricko10.github.io/froggerArcade
+
+If you want to run it on your local machine.  Download and unzip all files to a local directory, and then open the index.html with your favorite browser that runs JavaScript.
+
 <h1>How to play</h1>
 =============
 
@@ -20,4 +24,4 @@ If you jump in the water you will lose a life but gain a gem back giving you 450
 
 Once you collect 5 gems and grab the key guardians will appear.  They destroy enemy bugs! For free!
 
-The game ends once your out of lives.
+The game ends once your out of lives. You start with 3 lives.
