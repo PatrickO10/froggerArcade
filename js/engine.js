@@ -138,22 +138,17 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
         }
-        if(lifeCount >= 1){
-            renderEntities(); // Render the entities when player still has lives
-        } else {  // Doesn't render entities
-            lifeCount = 0;  // Life set to 0
-            ctx.clearRect(0, 0, 505, 606); // Clears the board
-            ctx.fillStyle = 'indigo'; 
-            ctx.fillRect(0, 0, 505, 303); // Sets the rect indigo
-            ctx.font = "bold 102px impact";
-            ctx.fillStyle = scoreboard.style.color;
-            ctx.strokeStyle = "#000000";
-            ctx.fillText("GAME", 120, 150); // Adds text to the rectangle
-            ctx.fillText("OVER", 125, 240);
-            ctx.strokeText("GAME", 120, 150);
-            ctx.strokeText("OVER", 125, 240);
-            
-        }
+        return lifeCount >= 1 ? renderEntities() : (lifeCount = 0,  // Life set to 0
+            ctx.clearRect(0, 0, 505, 606), // Clears the board
+            ctx.fillStyle = 'indigo',
+            ctx.fillRect(0, 0, 505, 303), // Sets the rect indigo
+            ctx.font = "bold 102px impact",
+            ctx.fillStyle = scoreboard.style.color,
+            ctx.strokeStyle = "#000000",
+            ctx.fillText("GAME", 120, 150), // Adds text to the rectangle
+            ctx.fillText("OVER", 125, 240),
+            ctx.strokeText("GAME", 120, 150),
+            ctx.strokeText("OVER", 125, 240));
     }
 
     /* This function is called by the render function and is called on each game
@@ -192,7 +187,7 @@ var Engine = (function(global) {
         'images/enemy-bug-blue.png',
         'images/char-boy.png',
         'images/char-horn-girl.png',
-        'images/char-pink-girl.png', 
+        'images/char-pink-girl.png',
         'images/char-princess-girl.png',
         'images/char-cat-girl.png',
         'images/Gem Orange.png',
