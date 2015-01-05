@@ -1,0 +1,16 @@
+Patrick Orth’s Resources Project 3
+Got some inspiration from DW Frogger: http://dw-frogger.appspot.com/
+Saw how he used math to randomize arrays and looked it up with MDN.
+Also checked out this page when I started out: https://github.com/natetarrh/frogger
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math
+document.getElementById(id);
+Looked up this to use for my scoreboard.
+https://developer.mozilla.org/en-US/docs/Web/API/document.getElementById
+Got the idea to do the scoreboard like I did from this fellow student:
+http://victoria-front-enddev.github.io/Udacity-Project-3/
+https://developer.mozilla.org/en-US/docs/Web/API/Element.innerHTML
+ChangeColors method from: https://developer.mozilla.org/en-US/docs/Web/API/document.getElementById
+Other resources:
+http://eloquentjavascript.net/
+http://dailyjs.com/2012/07/23/js101-scope/
+http://javascript.info/tutorial/pseudo-classical-pattern
